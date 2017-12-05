@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
@@ -39,8 +41,13 @@ public class ServerTCPThread extends Thread {
 			
 			BufferedReader in = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(mySocket.getOutputStream()));
+			FileWriter file = new FileWriter("bazaOdpowiedzi.txt", true);
+			BufferedWriter wr = new BufferedWriter(file);
+			FileWriter file2 = new FileWriter("wyniki.txt", true);
+			BufferedWriter wr_res = new BufferedWriter(file2);
 			String str;
-			int i, score = 0, ans;
+			int i, score = 0, ans, id;
+			id = Integer.parseInt(in.readLine());
 			for(i = 0; i < 7; i++)
 			{
 				str = in.readLine();
@@ -58,12 +65,16 @@ public class ServerTCPThread extends Thread {
 				
 				str = in.readLine();
 				ans = Integer.parseInt(str);
+				wr.write(id + " " + (i+1) + " " + ans + " ");
 				
 				if(ans == q.getCorrect())
 					score++;
 			}
-			out.println("Twój wynik " + score);
-			out.flush();
+			wr.newLine();
+			wr.close();
+			wr_res.write(id + " " + score + " ");
+			wr_res.newLine();
+			wr_res.close();
 			mySocket.close();
 		} catch (Exception e) {
 			System.err.println(e);

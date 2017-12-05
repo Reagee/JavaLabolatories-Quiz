@@ -30,7 +30,8 @@ public class ClientTCP {
 				Scanner sc = new Scanner(System.in);
 				String str;
 				socket.setTcpNoDelay(true);
-				
+				out.println(myID);
+				out.flush();
 				
 				for(int i = 0; i < 7; i++)
 				{
@@ -47,8 +48,6 @@ public class ClientTCP {
 					out.flush();
 					
 				}
-				str = in.readLine();
-				System.out.println(str);
 				
 				sc.close();
 				socket.close();
