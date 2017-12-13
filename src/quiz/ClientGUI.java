@@ -14,7 +14,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-public class GUI extends Application {
+public class ClientGUI extends Application {
 	
 	  private Label question = new Label(); 
 	  private Label result = new Label();
@@ -24,13 +24,7 @@ public class GUI extends Application {
 	  private Button btn4 = new Button();
 	  private int i;
 	  private int number = 0;
-	  private int score;
-	  
-	public int getScore(BufferedReader in) throws NumberFormatException, IOException {
-		score = Integer.parseInt(in.readLine());
-		return score;
-	}
-	
+
 	public int getI(BufferedReader in) throws NumberFormatException, IOException {
 		i = Integer.parseInt(in.readLine());
 		return i;
@@ -42,13 +36,18 @@ public class GUI extends Application {
 		btn2.setText(in.readLine());
 		btn3.setText(in.readLine());
 		btn4.setText(in.readLine());
+		result.setText("Twój wynik: " + in.readLine() + "/15");
 	}
 	
     public void start(Stage primaryStage) throws IOException {
     	ClientTCP client = new ClientTCP();
     	client.start_connection();
+    	client.getOut().println(client.getId());
+    	client.getOut().flush();
+    	
     	i = getI(client.getIn());
     	nextQ(client.getIn(),client.getOut());
+    	number++;
     	
         primaryStage.setTitle("Quiz");
          GridPane gridPane = new GridPane();
@@ -63,15 +62,15 @@ public class GUI extends Application {
         resultPane.setVgap(10);
         resultPane.setPadding(new Insets(10,10,10,10));
         resultPane.add(result, 3, 3);
+        result.setFont(Font.font("Arial",30));
           
-        
         btn1.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent event) {
-        		client.getOut().println(Integer.toString(1));
-        		client.getOut().flush();
         		if(number<i)
         		{
+        			client.getOut().println(Integer.toString(1));
+            		client.getOut().flush();
         			try {
         				nextQ(client.getIn(),client.getOut());
         			} catch (IOException e) {
@@ -80,29 +79,16 @@ public class GUI extends Application {
         			number++;
         		}
         		else
-        		{
-        			try {
-						score = getScore(client.getIn());
-					} catch (NumberFormatException | IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-        			System.out.println(score);
+        		{      			
+          			Scene scene2 = new Scene(resultPane,512,366);
+        		    primaryStage.setScene(scene2);
+        			primaryStage.show();	
         			try {
 						client.getSocket().close();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-        			/*try {
-        			score = getScore(client.getIn());
-            		result.setText(Integer.toString(score));
-        			Scene scene2 = new Scene(resultPane,512,366);
-        	        primaryStage.setScene(scene2);
-        	        primaryStage.show();
-        			} catch(IOException e) {
-        				e.printStackTrace();
-        			}*/
         		}
         	}
         });
@@ -110,10 +96,10 @@ public class GUI extends Application {
         btn2.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent event) {
-        		client.getOut().println(Integer.toString(2));
-        		client.getOut().flush();
         		if(number<i)
         		{
+        			client.getOut().println(Integer.toString(2));
+            		client.getOut().flush();
         			try {
         				nextQ(client.getIn(),client.getOut());
         			} catch (IOException e) {
@@ -123,21 +109,15 @@ public class GUI extends Application {
         		}
         		else
         		{
+        			Scene scene2 = new Scene(resultPane,512,366);
+        		    primaryStage.setScene(scene2);
+        			primaryStage.show();	
         			try {
 						client.getSocket().close();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-        			try {
-        				score = getScore(client.getIn());
-            			result.setText(Integer.toString(score));
-            			Scene scene2 = new Scene(resultPane,512,366);
-            	        primaryStage.setScene(scene2);
-            	        primaryStage.show();
-            			} catch(IOException e) {
-            				e.printStackTrace();
-            			}
         		}
         	}
         });
@@ -145,10 +125,10 @@ public class GUI extends Application {
         btn3.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent event) {
-        		client.getOut().println(Integer.toString(3));
-        		client.getOut().flush();
         		if(number<i)
         		{
+        			client.getOut().println(Integer.toString(3));
+            		client.getOut().flush();
         			try {
         				nextQ(client.getIn(),client.getOut());
         			} catch (IOException e) {
@@ -158,21 +138,15 @@ public class GUI extends Application {
         		}
         		else
         		{
+        			Scene scene2 = new Scene(resultPane,512,366);
+        		    primaryStage.setScene(scene2);
+        			primaryStage.show();	
         			try {
 						client.getSocket().close();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-        			try {
-        				score = getScore(client.getIn());
-            			result.setText(Integer.toString(score));
-            			Scene scene2 = new Scene(resultPane,512,366);
-            	        primaryStage.setScene(scene2);
-            	        primaryStage.show();
-            			} catch(IOException e) {
-            				e.printStackTrace();
-            			}
         		}
         	}
         });
@@ -180,10 +154,10 @@ public class GUI extends Application {
         btn4.setOnAction(new EventHandler<ActionEvent>() {
         	@Override
         	public void handle(ActionEvent event) {
-        		client.getOut().println(Integer.toString(4));
-        		client.getOut().flush();
         		if(number<i)
         		{
+        			client.getOut().println(Integer.toString(4));
+            		client.getOut().flush();
         			try {
         				nextQ(client.getIn(),client.getOut());
         			} catch (IOException e) {
@@ -193,26 +167,19 @@ public class GUI extends Application {
         		}
         		else
         		{
+        			Scene scene2 = new Scene(resultPane,512,366);
+        		    primaryStage.setScene(scene2);
+        			primaryStage.show();	
         			try {
 						client.getSocket().close();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-        			
-        			try {
-        				score = getScore(client.getIn());
-            			result.setText(Integer.toString(score));
-            			Scene scene2 = new Scene(resultPane,512,366);
-            	        primaryStage.setScene(scene2);
-            	        primaryStage.show();
-            			} catch(IOException e) {
-            				e.printStackTrace();
-            			}
         		}
         	}
         });
-           
+      
         gridPane.add(question, 1, 2);
         gridPane.add(btn1, 1, 3);
         gridPane.add(btn2, 1,4);
@@ -224,7 +191,10 @@ public class GUI extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         
-    }
+    }   
+        
+        
+    
     
     
     

@@ -15,7 +15,7 @@ public class ClientTCP extends Thread{
 	private Socket socket;
 	
 	public ClientTCP(){
-		this.myID = (int) (Math.random() * 1000000);
+		this.myID = (int) (Math.random() * 100000);
 	}
 	
 	public int getID() {
