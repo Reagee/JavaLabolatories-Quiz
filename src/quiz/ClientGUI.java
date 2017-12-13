@@ -223,8 +223,7 @@ public class ClientGUI extends Application {
         
         Scene scene = new Scene(gridPane,836,256);
         primaryStage.setScene(scene);
-        primaryStage.show();
-        
+        primaryStage.show();     
     }   
         
         

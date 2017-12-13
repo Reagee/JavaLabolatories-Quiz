@@ -49,8 +49,7 @@ public class ClientTCP extends Thread{
 			
 			} catch (Exception e) {
 				System.err.println(e);
-			}
-		
+			}	
 	}
 	
 }
