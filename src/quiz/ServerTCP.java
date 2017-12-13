@@ -10,6 +10,7 @@ public class ServerTCP extends Thread{
 		return serverSocket;
 	}
 	
+	
 	public void run() {
 		int port = 3506;
 		try {

@@ -40,28 +40,39 @@ public class ServerTCPThread extends Thread {
 		Connection con = getConnection("jdbc:mysql://", "localhost", 3306, "root", "");
 		Statement st = createStatement(con);
 		Statement st2 = createStatement(con);
+		Statement st3 = createStatement(con);
 		
-		// próba wybrania bazy
-		executeUpdate(st, "USE lab_java;");
+		getDatabase(st);
+		
 		String sql = "select * from questions";
 		String sql2 = "select count(*) as rows from questions";
+		
 		ResultSet result = executeQuery(st,sql);
 		ResultSet number = executeQuery(st2,sql2);
 		int row = 0;
 		int score = 0;
+		int id;
 		int ans;
 		try {
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(mySocket.getOutputStream()));
 			BufferedReader in = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
+			id = Integer.parseInt(in.readLine());
+			
+			String sql3 = "INSERT INTO student_answers (student_id) VALUES ("+id+")";
+			executeUpdate(st3,sql3);
+			String sql4 = "INSERT INTO results (student_id) VALUES ("+id+")";
+			executeUpdate(st3,sql4);
+				
 			number.next();
 			row = number.getInt("rows");
-			out.println(number.getInt("rows"));
+			out.println(row);
 			out.flush();
+			
 			int i = 0;
-			while(i<row) {
-				
+			while(i  < row){
 				
 				result.next();
+				
 				out.println(result.getInt("id"));
 				out.flush();
 				out.println(result.getString("question_content"));
@@ -80,12 +91,44 @@ public class ServerTCPThread extends Thread {
 				{
 					score++;
 				}
-				i++;	
-			}
-			if(i==15) {
+				
+				if(ans == 1)
+				{
+					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_a FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
+					executeUpdate(st3,sql5);
+				}
+				
+				if(ans == 2)
+				{
+					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_b FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
+					executeUpdate(st3,sql5);
+				}
+				
+				if(ans == 3)
+				{
+					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_c FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
+					executeUpdate(st3,sql5);
+				}
+				
+				if(ans == 4)
+				{
+					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_d FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
+					executeUpdate(st3,sql5);
+				}
+				
+				if (ans > 4)
+				{
+					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"='Bledne pobranie readLine()' WHERE student_id ="+id+"";
+					executeUpdate(st3,sql5);
+				}
+				
 				out.println(score);
 				out.flush();
+				i++;
 			}
+			String sql5 = "UPDATE results SET score="+score+" WHERE student_id="+id+"";
+			executeUpdate(st3,sql5);
+			
 		} catch (SQLException | IOException e1) {
 			e1.printStackTrace();
 		}
@@ -236,6 +279,105 @@ public class ServerTCPThread extends Thread {
 		} catch (SQLException e) {
 			System.out.println("Bl¹d odczytu z bazy! " + e.getMessage() + ": " + e.getErrorCode());
 		}
+	}
+	
+	public void getDatabase(Statement st) {
+		if (executeUpdate(st,"DROP DATABASE IF EXISTS MG_JAVA_1105;") == 0)
+			System.out.println("Baza usuniêta");
+		else
+			System.out.println("Nie znaleziono bazy");
+		
+		// próba wybrania bazy
+		if (executeUpdate(st, "USE MG_JAVA_1105;") == 0)
+			System.out.println("Baza wybrana");
+		else {
+			System.out.println("Baza nie istnieje! Tworzymy bazê: MG_JAVA_1105");
+			if (executeUpdate(st, "create Database MG_JAVA_1105 CHARACTER SET utf8 COLLATE utf8_polish_ci;") == 1)
+				System.out.println("Baza utworzona");
+			else
+				System.out.println("Baza nieutworzona!");
+			if (executeUpdate(st, "USE MG_JAVA_1105;") == 0)
+				System.out.println("Baza wybrana");
+			else
+				System.out.println("Baza niewybrana!");
+		}
+		
+		if (executeUpdate(st,
+				"CREATE TABLE `questions` (" + 
+				"  `id` int(11) NOT NULL," + 
+				"  `question_content` varchar(150) COLLATE utf8_polish_ci NOT NULL," + 
+				"  `answer_a` varchar(50) COLLATE utf8_polish_ci NOT NULL," + 
+				"  `answer_b` varchar(50) COLLATE utf8_polish_ci NOT NULL," + 
+				"  `answer_c` varchar(50) COLLATE utf8_polish_ci NOT NULL," + 
+				"  `answer_d` varchar(50) COLLATE utf8_polish_ci NOT NULL," + 
+				"  `correct_answer` int(11) NOT NULL" + 
+				") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;") == 0)
+			System.out.println("Tabela 'Pytania' utworzona");
+		else
+			System.out.println("Tabela 'Pytania' nie utworzona!");
+		
+		if (executeUpdate(st,"ALTER TABLE questions ADD PRIMARY KEY (id);") == 0)
+			System.out.println("Dodano klucz dla tabeli 'Pytania'");
+		else
+			System.out.println("B³¹d w dodawaniu klucza dla tabeli 'Pytania'");	
+		
+		if (executeUpdate(st,
+				"CREATE TABLE `student_answers` (" + 
+				"  `student_id` int(20) NOT NULL," + 
+				"  `answer_1` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_2` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_3` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_4` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_5` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_6` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_7` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_8` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_9` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_10` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_11` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_12` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_13` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_14` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi'," + 
+				"  `answer_15` varchar(50) COLLATE utf8_polish_ci DEFAULT 'Brak odpowiedzi')" +  
+				"ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;") == 0)
+			System.out.println("Tabela 'Odpowiedzi' utworzona");
+		else
+			System.out.println("Tabela 'Odpowiedzi' nie utworzona!");
+		
+		if (executeUpdate(st,"ALTER TABLE `student_answers` ADD PRIMARY KEY (`student_id`);") == 0)
+			System.out.println("Dodano klucz dla tabeli 'Odpowiedzi'");
+		else
+			System.out.println("B³¹d w dodawaniu klucza dla tabeli 'Odpowiedzi'");
+		
+		if (executeUpdate(st,
+				"CREATE TABLE `results` (`student_id` int(20) NOT NULL,`score` int(2) DEFAULT NULL) " + 
+				"ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;") == 0)
+			System.out.println("Tabela 'Wyniki' utworzona");
+		else
+			System.out.println("Tabela 'Wyniki' nie utworzona!");
+		
+		if (executeUpdate(st,"ALTER TABLE `results` ADD PRIMARY KEY (`student_id`);") == 0)
+			System.out.println("Dodano klucz dla tabeli 'Wyniki'");
+		else
+			System.out.println("B³¹d w dodawaniu klucza dla tabeli 'Wyniki'");
+		
+		String insertQ = "INSERT INTO `questions` (`id`, `question_content`, `answer_a`, `answer_b`, `answer_c`, `answer_d`, `correct_answer`) VALUES" + 
+				"(1, 'Co oznacza skrót USB?', 'Universal Satelite Bus', 'Universal System Bus', 'Universal Serial Bus', 'Universal Softvare Bus', 3)," + 
+				"(2, 'W jakiej firmie Steve Jobs podpatrzyl graficzny interfejs uzytkownika z myszka?', 'Xerox', 'Microsoft', 'Amiga', 'IBM', 1)," + 
+				"(3, 'Która z tych architektur NIE ma zastosowania w budowie komputerów?', 'Architektura Oksfordzka', 'Architektura Princeton', 'Architektura Johna Von Neumana', 'Architektura Harwardzka', 1)," + 
+				"(4, 'Skad pochodzi znak pisarski @ (malpa)', 'z jezyka arabskiego', 'z jezyka greckiego', 'z jezyka lacinskiego', 'stworzono ten symbol na potrzeby e-mailii', 3)," + 
+				"(5, 'Pierwszy pakiet programów analizujacych bezpieczenstwo systemów informatycznych COPS napisal amerykanski programista i byly hacker:', 'Richard Matthew Stallman', 'Agent Steal', 'Eric Steven Raymond', 'Dan Farmer', 4)," + 
+				"(6, 'Kto wymyslil komputer Macintosh ?', 'Bill Gates', 'Steve Jobs', 'Jef Raskin', 'Stephan Gary Wozniak', 3)," + 
+				"(7, 'Rodzajem drukarki uzywanej zazwyczaj w kasach i drukarkach fiskalnych jest:', 'Drukarka produkcyjna', 'Drukarka termotransferowa', 'Drukarka termiczna', 'Drukarka wierszowa', 3)," + 
+				"(8, 'W którym roku zostala wyslana pierwsza wiadomosc e-mail?', '1970', '1973', '1975', '1971', 4)," + 
+				"(9, 'Ekspertem bezpieczenstwa komputerowego w finansowanym przez rzad centrum komputerowym w San Diego oraz konsultantem FBI jest byly haker:', 'Gary McKinnon', 'Kevin David Mitnick', 'Anthony Chris Zboralski', 'Tsutomu Shimomura', 4)," + 
+				"(10, 'Popularna wyszukiwarka Google.com nazywala sie wczesniej:', 'AdWords', 'PageRank', 'BackRub', 'Alphabet', 3)," + 
+				"(11, 'Co to jest \"zip\" ?', 'Rodzaj kodeka muzycznego', 'Rozszerzenie obrazka', 'Format kompresji plików', 'Rozszerzenie dzwieku', 3)," + 
+				"(12, 'Jak nazywa sie podstawowy edytor graficzny Windows?', 'Word', 'Paint', 'Photoshop', 'Gimp!', 2)," + 
+				"(13, 'Do czego sluzy hiperlacze?', 'Do otwierania stron www', 'Do czytania dokumentów', 'Do przyspieszania internetu', 'Do wysylania filmów', 1)," + 
+				"(14, 'Na którym serwerze mozna odtworzyc wideo strumieniowane?', 'o2', 'YouTube', 'Onet', 'Wp', 2)," + 
+				"(15, 'Najpopularniejszy format plików muzycznych to:', 'bmp', 'doc', 'mp3', 'avi', 3);";
+		executeUpdate(st, insertQ);
 	}
 
 }

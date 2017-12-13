@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 public class ClientTCP extends Thread{
 	
-	
 	private int myID;
 	private BufferedReader in;
 	private PrintWriter out;
