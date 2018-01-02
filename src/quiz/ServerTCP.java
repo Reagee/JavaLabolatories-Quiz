@@ -5,13 +5,17 @@ import java.net.*;
 public class ServerTCP extends Thread{
 	
 	private ServerSocket serverSocket;
+	private int port;
 	
+	public ServerTCP(int port) {
+		this.port = port;
+	}
+
 	public ServerSocket getServerSocket() {
 		return serverSocket;
 	}
 	
 	public void run() {
-		int port = 3506;
 		try {
 			// tworzymy socket
 			sleep(1000);

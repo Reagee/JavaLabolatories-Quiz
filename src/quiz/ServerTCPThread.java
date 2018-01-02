@@ -1,11 +1,7 @@
 package quiz;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.*;
@@ -15,8 +11,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import javafx.stage.Stage;
@@ -52,7 +46,7 @@ public class ServerTCPThread extends Thread {
 		int row = 0;
 		int score = 0;
 		int id;
-		int ans;
+		String ans;
 		try {
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(mySocket.getOutputStream()));
 			BufferedReader in = new BufferedReader(new InputStreamReader(mySocket.getInputStream()));
@@ -67,7 +61,6 @@ public class ServerTCPThread extends Thread {
 			row = number.getInt("rows");
 			out.println(row);
 			out.flush();
-			
 			int i = 0;
 			while(i  < row){
 				
@@ -86,48 +79,25 @@ public class ServerTCPThread extends Thread {
 				out.println(result.getString("answer_d"));	
 				out.flush();
 				
-				ans = Integer.parseInt(in.readLine());
-				if(ans == result.getInt("correct_answer"))
+				ans = in.readLine();
+				
+				if(ans.equals(result.getString("correct_answer")))
 				{
 					score++;
 				}
 				
-				if(ans == 1)
-				{
-					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_a FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
-					executeUpdate(st3,sql5);
-				}
-				
-				if(ans == 2)
-				{
-					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_b FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
-					executeUpdate(st3,sql5);
-				}
-				
-				if(ans == 3)
-				{
-					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_c FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
-					executeUpdate(st3,sql5);
-				}
-				
-				if(ans == 4)
-				{
-					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT answer_d FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
-					executeUpdate(st3,sql5);
-				}
-				
-				if (ans > 4)
-				{
-					String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"='Bledne pobranie readLine()' WHERE student_id ="+id+"";
-					executeUpdate(st3,sql5);
-				}
-				
+				setAnswer(i,id,st3,ans);
+			
 				out.println(score);
 				out.flush();
 				i++;
 			}
 			String sql5 = "UPDATE results SET score="+score+" WHERE student_id="+id+"";
 			executeUpdate(st3,sql5);
+			
+			closeConnection(con,st3);
+			closeConnection(con,st);
+			closeConnection(con,st2);
 			
 		} catch (SQLException | IOException e1) {
 			e1.printStackTrace();
@@ -137,6 +107,37 @@ public class ServerTCPThread extends Thread {
 			mySocket.close();
 		} catch (Exception e) {
 			System.err.println(e);
+		}
+	}
+	
+	public void setAnswer(int i,int id, Statement st,String ans) {
+		String answer = null;
+		
+		if(ans.equals("1000"))
+		{
+			answer = "answer_a";
+		}
+		else if(ans.equals("0100"))
+		{
+			answer = "answer_b";
+		}
+		else if(ans.equals("0010"))
+		{
+			answer = "answer_c";
+		}
+		else if(ans.equals("0001"))
+		{
+			answer = "answer_d";
+		}
+		else if(!ans.equals("1000") && !ans.equals("0100") && !ans.equals("0010") && !ans.equals("0001"))
+		{
+			String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"='Bledne pobranie readLine()' WHERE student_id ="+id+"";
+			executeUpdate(st,sql5);
+		}
+		if(ans.equals("1000") || ans.equals("0100") || ans.equals("0010") || ans.equals("0001"))
+		{
+			String sql5 = "UPDATE student_answers SET answer_"+(i+1)+"=(SELECT "+answer+" FROM questions WHERE id = "+(i+1)+") WHERE student_id ="+id+"";
+			executeUpdate(st,sql5);
 		}
 	}
 	
@@ -214,76 +215,9 @@ public class ServerTCPThread extends Thread {
 	}
 	
 	
-	private static void printDataFromQuery(ResultSet r) {
-		ResultSetMetaData rsmd;
-		try {
-			rsmd = r.getMetaData();
-			int numcols = rsmd.getColumnCount(); // pobieranie liczby kolumn
-			// wyswietlanie nazw kolumn:
-			for (int i = 1; i <= numcols; i++) {
-				System.out.print("\t" + rsmd.getColumnLabel(i) + "\t|");
-			}
-			System.out
-					.print("\n____________________________________________________________________________\n");
-			/**
-			 * r.next() - przejœcie do kolejnego rekordu (wiersza) otrzymanych wyników
-			 */
-			// wyswietlanie kolejnych rekordow:
-			while (r.next()) {
-				for (int i = 1; i <= numcols; i++) {
-					Object obj = r.getObject(i);
-					if (obj != null)
-						System.out.print("\t" + obj.toString() + "\t|");
-					else
-						System.out.print("\t");
-				}
-				System.out.println();
-			}
-		} catch (SQLException e) {
-			System.out.println("Bl¹d odczytu z bazy! " + e.getMessage() + ": " + e.getErrorCode());
-		}
-	}
-	/**
-	 * Metoda pobiera dane na podstawie nazwy kolumny
-	 */
-	public static void sqlGetDataByName(ResultSet r) {
-		System.out.println("Pobieranie danych z wykorzystaniem nazw kolumn");
-		try {
-			ResultSetMetaData rsmd = r.getMetaData();
-			int numcols = rsmd.getColumnCount();
-			// Tytul tabeli z etykietami kolumn zestawow wynikow
-			for (int i = 1; i <= numcols; i++) {
-				System.out.print(rsmd.getColumnLabel(i) + "\t|\t");
-			}
-			System.out
-			.print("\n____________________________________________________________________________\n");
-			while (r.next()) {
-				int size = r.getMetaData().getColumnCount();
-				for(int i = 1; i <= size; i++){
-					switch(r.getMetaData().getColumnTypeName(i)){
-					case "INT":
-						System.out.print(r.getInt(r.getMetaData().getColumnName(i)) + "\t|\t");
-						break;
-					case "DATE":
-						System.out.print(r.getDate(r.getMetaData().getColumnName(i)) + "\t|\t");
-						break;
-					case "VARCHAR":
-						System.out.print(r.getString(r.getMetaData().getColumnName(i)) + "\t|\t");
-						break;
-					default:
-						System.out.print(r.getMetaData().getColumnTypeName(i));
-					}
-				}
-				System.out.println();
-			}
-		} catch (SQLException e) {
-			System.out.println("Bl¹d odczytu z bazy! " + e.getMessage() + ": " + e.getErrorCode());
-		}
-	}
-	
 	public void getDatabase(Statement st) {
-		if (executeUpdate(st,"DROP DATABASE IF EXISTS MG_JAVA_1105;") == 0)
-			System.out.println("Baza usuniêta");
+		if (executeUpdate(st,"CREATE DATABASE IF NOT EXISTS MG_JAVA_1105;") == 0)
+			System.out.println("Baza stworzona");
 		else
 			System.out.println("Nie znaleziono bazy");
 		
@@ -310,7 +244,7 @@ public class ServerTCPThread extends Thread {
 				"  `answer_b` varchar(50) COLLATE utf8_polish_ci NOT NULL," + 
 				"  `answer_c` varchar(50) COLLATE utf8_polish_ci NOT NULL," + 
 				"  `answer_d` varchar(50) COLLATE utf8_polish_ci NOT NULL," + 
-				"  `correct_answer` int(11) NOT NULL" + 
+				"  `correct_answer` varchar(4) NOT NULL" + 
 				") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;") == 0)
 			System.out.println("Tabela 'Pytania' utworzona");
 		else
@@ -362,21 +296,21 @@ public class ServerTCPThread extends Thread {
 			System.out.println("B³¹d w dodawaniu klucza dla tabeli 'Wyniki'");
 		
 		String insertQ = "INSERT INTO `questions` (`id`, `question_content`, `answer_a`, `answer_b`, `answer_c`, `answer_d`, `correct_answer`) VALUES" + 
-				"(1, 'Co oznacza skrót USB?', 'Universal Satelite Bus', 'Universal System Bus', 'Universal Serial Bus', 'Universal Softvare Bus', 3)," + 
-				"(2, 'W jakiej firmie Steve Jobs podpatrzyl graficzny interfejs uzytkownika z myszka?', 'Xerox', 'Microsoft', 'Amiga', 'IBM', 1)," + 
-				"(3, 'Która z tych architektur NIE ma zastosowania w budowie komputerów?', 'Architektura Oksfordzka', 'Architektura Princeton', 'Architektura Johna Von Neumana', 'Architektura Harwardzka', 1)," + 
-				"(4, 'Skad pochodzi znak pisarski @ (malpa)', 'z jezyka arabskiego', 'z jezyka greckiego', 'z jezyka lacinskiego', 'stworzono ten symbol na potrzeby e-mailii', 3)," + 
-				"(5, 'Pierwszy pakiet programów analizujacych bezpieczenstwo systemów informatycznych COPS napisal amerykanski programista i byly hacker:', 'Richard Matthew Stallman', 'Agent Steal', 'Eric Steven Raymond', 'Dan Farmer', 4)," + 
-				"(6, 'Kto wymyslil komputer Macintosh ?', 'Bill Gates', 'Steve Jobs', 'Jef Raskin', 'Stephan Gary Wozniak', 3)," + 
-				"(7, 'Rodzajem drukarki uzywanej zazwyczaj w kasach i drukarkach fiskalnych jest:', 'Drukarka produkcyjna', 'Drukarka termotransferowa', 'Drukarka termiczna', 'Drukarka wierszowa', 3)," + 
-				"(8, 'W którym roku zostala wyslana pierwsza wiadomosc e-mail?', '1970', '1973', '1975', '1971', 4)," + 
-				"(9, 'Ekspertem bezpieczenstwa komputerowego w finansowanym przez rzad centrum komputerowym w San Diego oraz konsultantem FBI jest byly haker:', 'Gary McKinnon', 'Kevin David Mitnick', 'Anthony Chris Zboralski', 'Tsutomu Shimomura', 4)," + 
-				"(10, 'Popularna wyszukiwarka Google.com nazywala sie wczesniej:', 'AdWords', 'PageRank', 'BackRub', 'Alphabet', 3)," + 
-				"(11, 'Co to jest \"zip\" ?', 'Rodzaj kodeka muzycznego', 'Rozszerzenie obrazka', 'Format kompresji plików', 'Rozszerzenie dzwieku', 3)," + 
-				"(12, 'Jak nazywa sie podstawowy edytor graficzny Windows?', 'Word', 'Paint', 'Photoshop', 'Gimp!', 2)," + 
-				"(13, 'Do czego sluzy hiperlacze?', 'Do otwierania stron www', 'Do czytania dokumentów', 'Do przyspieszania internetu', 'Do wysylania filmów', 1)," + 
-				"(14, 'Na którym serwerze mozna odtworzyc wideo strumieniowane?', 'o2', 'YouTube', 'Onet', 'Wp', 2)," + 
-				"(15, 'Najpopularniejszy format plików muzycznych to:', 'bmp', 'doc', 'mp3', 'avi', 3);";
+				"(1, 'Co oznacza skrót USB?', 'Universal Satelite Bus', 'Universal System Bus', 'Universal Serial Bus', 'Universal Softvare Bus', '0010')," + 
+				"(2, 'W jakiej firmie Steve Jobs podpatrzyl graficzny interfejs uzytkownika z myszka?', 'Xerox', 'Microsoft', 'Amiga', 'IBM', '1000')," + 
+				"(3, 'Która z tych architektur NIE ma zastosowania w budowie komputerów?', 'Architektura Oksfordzka', 'Architektura Princeton', 'Architektura Johna Von Neumana', 'Architektura Harwardzka', '1000')," + 
+				"(4, 'Skad pochodzi znak pisarski @ (malpa)', 'z jezyka arabskiego', 'z jezyka greckiego', 'z jezyka lacinskiego', 'stworzono ten symbol na potrzeby e-mailii', '0010')," + 
+				"(5, 'Pierwszy pakiet programów analizujacych bezpieczenstwo systemów informatycznych COPS napisal amerykanski programista i byly hacker:', 'Richard Matthew Stallman', 'Agent Steal', 'Eric Steven Raymond', 'Dan Farmer', '0001')," + 
+				"(6, 'Kto wymyslil komputer Macintosh ?', 'Bill Gates', 'Steve Jobs', 'Jef Raskin', 'Stephan Gary Wozniak', '0010')," + 
+				"(7, 'Rodzajem drukarki uzywanej zazwyczaj w kasach i drukarkach fiskalnych jest:', 'Drukarka produkcyjna', 'Drukarka termotransferowa', 'Drukarka termiczna', 'Drukarka wierszowa', '0010')," + 
+				"(8, 'W którym roku zostala wyslana pierwsza wiadomosc e-mail?', '1970', '1973', '1975', '1971', '0001')," + 
+				"(9, 'Ekspertem bezpieczenstwa komputerowego w finansowanym przez rzad centrum komputerowym w San Diego oraz konsultantem FBI jest byly haker:', 'Gary McKinnon', 'Kevin David Mitnick', 'Anthony Chris Zboralski', 'Tsutomu Shimomura', '0001')," + 
+				"(10, 'Popularna wyszukiwarka Google.com nazywala sie wczesniej:', 'AdWords', 'PageRank', 'BackRub', 'Alphabet', '0010')," + 
+				"(11, 'Co to jest \"zip\" ?', 'Rodzaj kodeka muzycznego', 'Rozszerzenie obrazka', 'Format kompresji plików', 'Rozszerzenie dzwieku', '0010')," + 
+				"(12, 'Jak nazywa sie podstawowy edytor graficzny Windows?', 'Word', 'Paint', 'Photoshop', 'Gimp!', '0100')," + 
+				"(13, 'Do czego sluzy hiperlacze?', 'Do otwierania stron www', 'Do czytania dokumentów', 'Do przyspieszania internetu', 'Do wysylania filmów', '1000')," + 
+				"(14, 'Na którym serwerze mozna odtworzyc wideo strumieniowane?', 'o2', 'YouTube', 'Onet', 'Wp', '0100')," + 
+				"(15, 'Najpopularniejszy format plików muzycznych to:', 'bmp', 'doc', 'mp3', 'avi', '0010');";
 		executeUpdate(st, insertQ);
 	}
 

@@ -2,6 +2,8 @@ package quiz;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -9,6 +11,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -18,22 +21,77 @@ public class ServerGUI extends Application{
 	private Label status = new Label("Server is not working.");
 	private Button startServer = new Button("Start server");
 	private Button stopServer = new Button("Stop server");
+	private TextField port = new TextField("");
+	private CheckBox portChoose = new CheckBox("Wpisz port");
+	private CheckBox portDefault = new CheckBox("Port domyœlny (3506)");
+	private Label warning = new Label("");
 	
 	public void start(Stage primaryStage) throws IOException {
 		primaryStage.setTitle("Server");
+		port.setDisable(true);
 		GridPane gridPane = new GridPane();
 		gridPane.setAlignment(Pos.TOP_LEFT);
 		gridPane.setVgap(10);
 		gridPane.setHgap(10);
 		gridPane.setPadding(new Insets(10,10,10,10));
 		
-		ServerTCP serv = new ServerTCP();
+		portChoose.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {	
+				if(portDefault.isDisable() == false)
+				{
+					portDefault.setDisable(true);
+				}
+				if(portChoose.isSelected())
+				{
+					port.setDisable(false);
+				}
+				if(!portChoose.isSelected())
+				{
+					port.setDisable(true);
+					portDefault.setDisable(false);
+				}
+			}
+		});
+		
+		portDefault.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				if(portDefault.isSelected())
+				{
+					portChoose.setDisable(true);
+				}
+				else
+				{
+					portChoose.setDisable(false);
+				}
+			}
+		});
+		
+		
 		startServer.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {	
-				serv.start();
-				status.setText("Server is working !");
-				status.setTextFill(Color.GREEN);
+				warning.setText("");
+				if(portDefault.isSelected())
+				{
+					ServerTCP serv = new ServerTCP(3506);
+					serv.start();
+					status.setText("Server is working !");
+					status.setTextFill(Color.GREEN);
+				}
+				else if(portChoose.isSelected())
+				{
+					ServerTCP serv = new ServerTCP(Integer.parseInt(port.getText()));
+					serv.start();
+					status.setText("Server is working !");
+					status.setTextFill(Color.GREEN);
+				}
+				else
+				{
+					warning.setText("Wybierz port !");
+					warning.setTextFill(Color.RED);
+				}
 			}
 		});
 		
@@ -47,11 +105,14 @@ public class ServerGUI extends Application{
 		});
 		
 		status.setTextFill(Color.RED);
-		gridPane.add(startServer, 1, 1);
-		gridPane.add(stopServer, 2, 1);
-		gridPane.add(status, 1, 4);
-		
-		Scene scene = new Scene(gridPane, 256,128);
+		gridPane.add(portChoose, 1, 1);
+		gridPane.add(port, 2, 1);
+		gridPane.add(portDefault, 1, 2);
+		gridPane.add(startServer, 1, 4);
+		gridPane.add(stopServer, 2, 4);
+		gridPane.add(status, 1, 6);
+		gridPane.add(warning, 1, 5);
+		Scene scene = new Scene(gridPane, 328,178);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}

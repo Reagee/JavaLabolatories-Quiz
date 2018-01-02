@@ -4,7 +4,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.*;
-import java.util.Scanner;
 
 public class ClientTCP extends Thread{
 	
@@ -12,9 +11,11 @@ public class ClientTCP extends Thread{
 	private BufferedReader in;
 	private PrintWriter out;
 	private Socket socket;
+	private int port;
 	
-	public ClientTCP(){
+	public ClientTCP(int port){
 		this.myID = (int) (Math.random() * 100000);
+		this.port = port;
 	}
 	
 	public int getID() {
@@ -35,8 +36,6 @@ public class ClientTCP extends Thread{
 	}
 
 	public void start_connection() {
-			
-			int port = 3506;
 			
 			try {
 				socket = new Socket(InetAddress.getByName("127.0.0.1"), port);
