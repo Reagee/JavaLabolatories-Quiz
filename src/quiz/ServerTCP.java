@@ -6,7 +6,12 @@ public class ServerTCP extends Thread{
 	
 	private ServerSocket serverSocket;
 	private int port;
+	private int portFlag;
 	
+	public int getPortFlag() {
+		return portFlag;
+	}
+
 	public ServerTCP(int port) {
 		this.port = port;
 	}
@@ -18,20 +23,22 @@ public class ServerTCP extends Thread{
 	public void run() {
 		try {
 			// tworzymy socket
-			sleep(1000);
 			serverSocket = new ServerSocket(port);
 			while (true) {
-				// czekamy na zg³oszenie klienta ...
+				portFlag = 0;
+				// czekamy na zg³oszenie klienta ..
+				
 				Socket socket = serverSocket.accept();
 				// tworzymy w¹tek dla danego po³¹czenia i uruchamiamy go
 				(new ServerTCPThread(socket)).start();
 			}
 		} catch (Exception e) {
-			System.err.println(e);
+			portFlag = 1;
 		}finally{
 			if(serverSocket != null)
 				try {
 					serverSocket.close();
+					
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

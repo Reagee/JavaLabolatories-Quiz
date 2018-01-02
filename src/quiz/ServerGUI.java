@@ -77,15 +77,40 @@ public class ServerGUI extends Application{
 				{
 					ServerTCP serv = new ServerTCP(3506);
 					serv.start();
-					status.setText("Server is working !");
-					status.setTextFill(Color.GREEN);
+					try {
+						serv.sleep(5);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					if(serv.getPortFlag() == 1)
+					{
+						warning.setText("Port w u¿yciu !");
+						warning.setTextFill(Color.RED);
+					}
+					else if(serv.getPortFlag() == 0)
+					{
+						warning.setText("");
+						//serv.start();
+						status.setText("Server is working !");
+						status.setTextFill(Color.GREEN);
+					}
+					
 				}
 				else if(portChoose.isSelected())
 				{
 					ServerTCP serv = new ServerTCP(Integer.parseInt(port.getText()));
-					serv.start();
-					status.setText("Server is working !");
-					status.setTextFill(Color.GREEN);
+					if(serv.getPortFlag() == 1)
+					{
+						warning.setText("Port w u¿yciu !");
+						warning.setTextFill(Color.RED);
+					}
+					else if(serv.getPortFlag() == 0)
+					{
+						warning.setText("");
+						serv.start();
+						status.setText("Server is working !");
+						status.setTextFill(Color.GREEN);
+					}	
 				}
 				else
 				{
