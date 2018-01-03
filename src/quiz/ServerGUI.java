@@ -93,7 +93,6 @@ public class ServerGUI extends Application{
 					else if(serv.getPortFlag() == 0)
 					{
 						warning.setText("");
-						//serv.start();
 						status.setText("Server is working !");
 						status.setTextFill(Color.GREEN);
 					}

@@ -145,11 +145,26 @@ public class ClientGUI extends Application {
     	connect.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				warning.setText("");
-				if(portCustom.isSelected())
+				//warning.setText("");
+				if(portCustom.isSelected() == false && portDefault.isSelected() == false)
 				{
-					portNumber = Integer.parseInt(port.getText());
-					checkFlag = 1;
+					warning.setText("Wybierz port !");
+					warning.setTextFill(Color.RED);
+					checkFlag = 0;
+				}
+				else if(portCustom.isSelected())
+				{
+					if(port.getText() == null || port.getText().trim().isEmpty())
+					{
+						warning.setText("Wpisz port !");
+						warning.setTextFill(Color.RED);
+						checkFlag = 0;
+					}
+					else
+					{
+						portNumber = Integer.parseInt(port.getText());
+						checkFlag = 1;
+					}
 				}
 				else if(portDefault.isSelected())
 				{
@@ -266,6 +281,11 @@ public class ClientGUI extends Application {
 					primaryStage.setScene(scene);
 					primaryStage.show();
 			}
+				else
+				{
+					warning.setText("Wybierz port !");
+					warning.setTextFill(Color.RED);
+				}
 			}
 		});
     	
