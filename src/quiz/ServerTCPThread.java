@@ -8,7 +8,6 @@ import java.net.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
@@ -21,13 +20,13 @@ public class ServerTCPThread extends Thread {
 	Stage primaryStage = null;
     
 	public ServerTCPThread(Socket socket) {
-		super(); // konstruktor klasy Thread
+		super(); 
 		mySocket = socket;
 	}
 	
 	
 
-	public void run() // program w¹tku
+	public void run() 
 	{
 		System.out.println(Thread.activeCount());
 		checkDriver("com.mysql.jdbc.Driver");
@@ -142,8 +141,6 @@ public class ServerTCPThread extends Thread {
 	}
 	
 	public static boolean checkDriver(String driver) {
-		// LADOWANIE STEROWNIKA
-		//System.out.print("Sprawdzanie sterownika:");
 		try {
 			Class.forName(driver).newInstance();
 			return true;
@@ -166,7 +163,6 @@ public class ServerTCPThread extends Thread {
 			System.out.println("B³¹d po³¹czenia z baz¹ danych! " + e.getMessage() + ": " + e.getErrorCode());
 			System.exit(2);
 		}
-		//System.out.println("Po³¹czenie z baz¹ danych: ... OK");
 		return conn;
 	}
 	
@@ -221,7 +217,6 @@ public class ServerTCPThread extends Thread {
 		else
 			System.out.println("Nie znaleziono bazy");
 		
-		// próba wybrania bazy
 		if (executeUpdate(st, "USE MG_JAVA_1105;") == 0)
 			System.out.println("Baza wybrana");
 		else {

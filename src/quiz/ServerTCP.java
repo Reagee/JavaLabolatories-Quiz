@@ -22,14 +22,11 @@ public class ServerTCP extends Thread{
 	
 	public void run() {
 		try {
-			// tworzymy socket
 			serverSocket = new ServerSocket(port);
 			while (true) {
 				portFlag = 0;
-				// czekamy na zg³oszenie klienta ..
 				
 				Socket socket = serverSocket.accept();
-				// tworzymy w¹tek dla danego po³¹czenia i uruchamiamy go
 				(new ServerTCPThread(socket)).start();
 			}
 		} catch (Exception e) {

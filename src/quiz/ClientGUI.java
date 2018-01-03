@@ -42,7 +42,6 @@ public class ClientGUI extends Application {
 	  private String ch2a;
 	  private String ch3a;
 	  private String ch4a;
-	  private int ansFlag;
 	  
 	public int getI(BufferedReader in) throws NumberFormatException, IOException {
 		i = Integer.parseInt(in.readLine());

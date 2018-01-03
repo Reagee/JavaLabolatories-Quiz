@@ -72,6 +72,7 @@ public class ServerGUI extends Application{
 		
 		
 		startServer.setOnAction(new EventHandler<ActionEvent>() {
+			@SuppressWarnings("static-access")
 			@Override
 			public void handle(ActionEvent event) {	
 				warning.setText("");
