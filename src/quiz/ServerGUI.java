@@ -28,6 +28,8 @@ public class ServerGUI extends Application{
 	
 	public void start(Stage primaryStage) throws IOException {
 		primaryStage.setTitle("Server");
+		portDefault.setSelected(true);
+		portChoose.setDisable(true);
 		port.setDisable(true);
 		GridPane gridPane = new GridPane();
 		gridPane.setAlignment(Pos.TOP_LEFT);
@@ -98,20 +100,29 @@ public class ServerGUI extends Application{
 				}
 				else if(portChoose.isSelected())
 				{
-					ServerTCP serv = new ServerTCP(Integer.parseInt(port.getText()));
-					if(serv.getPortFlag() == 1)
+					if(port.getText() == null || port.getText().trim().isEmpty())
 					{
-						warning.setText("Port w u¿yciu !");
+						warning.setText("Wybierz port !");
 						warning.setTextFill(Color.RED);
 					}
-					else if(serv.getPortFlag() == 0)
+					else
 					{
-						warning.setText("");
-						serv.start();
-						status.setText("Server is working !");
-						status.setTextFill(Color.GREEN);
-					}	
+						ServerTCP serv = new ServerTCP(Integer.parseInt(port.getText()));
+						if(serv.getPortFlag() == 1)
+						{
+							warning.setText("Port w u¿yciu !");
+							warning.setTextFill(Color.RED);
+						}
+						else if(serv.getPortFlag() == 0)
+						{
+							warning.setText("");
+							serv.start();
+							status.setText("Server is working !");
+							status.setTextFill(Color.GREEN);
+						}	
+					}
 				}
+				
 				else
 				{
 					warning.setText("Wybierz port !");

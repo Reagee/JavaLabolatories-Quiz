@@ -21,11 +21,6 @@ public class ClientGUI extends Application {
 	  private Label question = new Label(); 
 	  private Label result = new Label();
 	  private Label id = new Label();
-	  /*private Button btn1 = new Button();
-	  private Button btn2 = new Button();
-	  private Button btn3 = new Button();
-	  private Button btn4 = new Button();
-	  */
 	  private CheckBox ch1 = new CheckBox();
 	  private CheckBox ch2 = new CheckBox();
 	  private CheckBox ch3 = new CheckBox();
@@ -60,10 +55,10 @@ public class ClientGUI extends Application {
 		ch3.setSelected(false);
 		ch4.setSelected(false);
 		question.setText(in.readLine()+". " + in.readLine());
-		ch1.setText(in.readLine());
-		ch2.setText(in.readLine());
-		ch3.setText(in.readLine());
-		ch4.setText(in.readLine());
+		ch1.setText("A) " + in.readLine());
+		ch2.setText("B) " + in.readLine());
+		ch3.setText("C) " + in.readLine());
+		ch4.setText("D) " + in.readLine());
 	}
 	
 	public void getScore(BufferedReader in) throws IOException {
@@ -72,6 +67,9 @@ public class ClientGUI extends Application {
 	
     public void start(Stage primaryStage) throws IOException {
     	
+    	port.setDisable(true);
+    	portCustom.setDisable(true);
+    	portDefault.setSelected(true);
     	GridPane connection = new GridPane();
     	connection.setAlignment(Pos.TOP_LEFT);
     	connection.setHgap(10);
@@ -124,7 +122,7 @@ public class ClientGUI extends Application {
 				else
 				{
 					portCustom.setDisable(false);
-					port.setDisable(false);
+					port.setDisable(true);
 				}
 			}
 		});
@@ -135,10 +133,12 @@ public class ClientGUI extends Application {
 				if(portCustom.isSelected())
 				{
 					portDefault.setDisable(true);
+					port.setDisable(false);
 				}
 				else
 				{
 					portDefault.setDisable(false);
+					port.setDisable(true);
 				}
 			}
 		});

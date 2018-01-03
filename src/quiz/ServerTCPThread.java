@@ -29,8 +29,8 @@ public class ServerTCPThread extends Thread {
 
 	public void run() // program w¹tku
 	{
+		System.out.println(Thread.activeCount());
 		checkDriver("com.mysql.jdbc.Driver");
-		
 		Connection con = getConnection("jdbc:mysql://", "localhost", 3306, "root", "");
 		Statement st = createStatement(con);
 		Statement st2 = createStatement(con);
